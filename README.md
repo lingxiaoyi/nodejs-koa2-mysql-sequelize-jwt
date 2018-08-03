@@ -1,13 +1,14 @@
 
 # nodejs-koa2-mysql-sequelize-jwt
 
-- 技术栈：nodejs, koa2, mysql, sequelize, jwt
+- 技术栈：nodejs, koa2, mysql, sequelize, jwt, eslint
 - 项目数据层和操作层分明
 - 使用koa2框架中间件，参数处理
 - jwt做权限接口验证
 - sequelize管理mysql数据库
 - 异步处理async/await
 - 已实现登录注册接口，文章增删改查接口
+- 用eslint做代码规范,将代码统一化
 - 喜欢或对你有帮助的话请点star✨✨，或有您有更好的建议和意见，请提出来告知我，可以留言issues，可以加我QQ: 550843086, Thanks.
 
 ### 一、学习使用
@@ -16,7 +17,7 @@
 git clone
 
 ```
-git clone https://github.com/liangfengbo/nodejs-koa2-mysql-sequelize-jwt.git
+git clone https://github.com/lingxiaoyi/nodejs-koa2-mysql-sequelize-jwt.git
 ```
 
 1.1.安装

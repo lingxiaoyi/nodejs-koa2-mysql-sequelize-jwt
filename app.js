@@ -11,35 +11,41 @@ const router = require('./routes/index')()
 const secret = require('./config/secret')
 const err = require('./middlreware/error')
 const rest = require('./util/rest')
+const path = require('path')
 // error handler
 onerror(app)
 
 app.use(err())
-app.use(cors());
+app.use(cors())
 
 // 过滤不用jwt验证
 app.use(jwt({secret: secret.sign}).unless({
     path: [
-        /^\/public\/stylesheets\/style\.css/,
+        /^\/stylesheets\/style\.css/,
         /^\/api\/v1\/user\/list/,
         /^\/api\/v1\/user/,
-        /^\/api\/v1\/user\/login/]
+        /^\/api\/v1\/user\/login/
+    ]
 }))
 
 // middlewares
 app.use(bodyparser({
-    enableTypes: ['json', 'form', 'text']
+    enableTypes: [
+        'json',
+        'form',
+        'text'
+    ]
 }))
 app.use(json())
 app.use(logger())
-app.use(require('koa-static')(__dirname + '/public'))
+app.use(require('koa-static')(path.resolve(__dirname, 'public')))
 
-app.use(views(__dirname + '/views', {
+app.use(views(path.resolve(__dirname, 'views'), {
     extension: 'pug'
 }))
 
 // logger
-app.use(async (ctx, next) => {
+app.use(async(ctx, next) => {
     const start = new Date()
     await next()
     const ms = new Date() - start
@@ -53,6 +59,6 @@ app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx)
-});
+})
 
 module.exports = app

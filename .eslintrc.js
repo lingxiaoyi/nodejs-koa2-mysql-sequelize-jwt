@@ -10,11 +10,12 @@ module.exports = {
     globals: {
         // Put things like jQuery, etc
         jQuery: true,
-        $: true,
+        $: true
     },
     env: {
         browser: true,
         jquery: true,
+        "node": true
     },
     // required to lint *.vue files
     plugins: [],
@@ -26,7 +27,7 @@ module.exports = {
         "dot-location": [2, "property"], // 强制使用.号取属性     .换行不报错
         'no-extra-boolean-cast': 0,
         'no-extend-native': 1,//禁止扩展native对象 警告
-        'space-before-function-paren': ['error', 'never'],
+        'space-before-function-paren': ['error', 'never'],//函数定义时括号前面要不要有空格
         'spaced-comment': 0,//注释风格要不要有空格什么的
         //"semi": ["error", "always"],
         'semi': [2, 'never'],   //分号不出现

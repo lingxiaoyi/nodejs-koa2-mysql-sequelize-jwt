@@ -1,32 +1,28 @@
-const moment = require('moment');
-module.exports = function (sequelize, DataTypes) {
+const moment = require('moment')
+module.exports = function(sequelize, DataTypes) {
     return sequelize.define('article', {
         // 文章ID
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
-            autoIncrement: true,
-        },
-        // 文章标题
+            autoIncrement: true
+        }, // 文章标题
         title: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'title'
-        },
-        // 文章作者
+        }, // 文章作者
         author: {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'author'
-        },
-        // 文章内容
+        }, // 文章内容
         content: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'content'
-        },
-        // 文章分类
+        }, // 文章分类
         category: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -35,13 +31,13 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             get() {
-                return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss');
+                return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss')
             }
         },
         updatedAt: {
             type: DataTypes.DATE,
             get() {
-                return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss');
+                return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss')
             }
         }
     }, {
@@ -50,5 +46,4 @@ module.exports = function (sequelize, DataTypes) {
         // 如果指定的表名称本就是复数形式则不变
         freezeTableName: false
     })
-
 }

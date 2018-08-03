@@ -1,7 +1,7 @@
 const db = require('../config/db')
-const Sequelize = db.sequelize;
-const Article = Sequelize.import('../schema/article');
-Article.sync({force: false});
+const Sequelize = db.sequelize
+const Article = Sequelize.import('../schema/article')
+Article.sync({force: false})
 
 class ArticleModel {
     /**
@@ -34,7 +34,12 @@ class ArticleModel {
             where: {
                 id
             },
-            fields: ['title', 'author', 'content', 'category']
+            fields: [
+                'title',
+                'author',
+                'content',
+                'category'
+            ]
         })
         return true
     }
@@ -50,13 +55,13 @@ class ArticleModel {
     /**
      * 获取文章详情数据
      * @param id  文章ID
-     * @returns {Promise<Model>}
+     * @returns {Promise.<Model>}
      */
     static async getArticleDetail(id) {
         return await Article.findOne({
             where: {
-                id,
-            },
+                id
+            }
         })
     }
 
@@ -68,12 +73,11 @@ class ArticleModel {
     static async deleteArticle(id) {
         await Article.destroy({
             where: {
-                id,
+                id
             }
         })
         return true
     }
-
 }
 
 module.exports = ArticleModel

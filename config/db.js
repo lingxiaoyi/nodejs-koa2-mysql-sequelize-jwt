@@ -1,11 +1,11 @@
-const Sequelize = require('sequelize');
+const Sequelize = require('sequelize')
 const sequelize = new Sequelize('test', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
     operatorsAliases: false,
     dialectOptions: {
-        charset: "utf8mb4",
-        collate: "utf8mb4_unicode_ci",
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_unicode_ci',
         supportBigNumbers: true,
         bigNumberStrings: true
     },
@@ -17,7 +17,7 @@ const sequelize = new Sequelize('test', 'root', '', {
         idle: 10000
     },
     timezone: '+08:00' //东八时区
-});
+})
 
 module.exports = {
     sequelize

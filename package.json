@@ -29,6 +29,17 @@
     "sequelize": "^4.37.10"
   },
   "devDependencies": {
-    "nodemon": "^1.8.1"
+    "babel-eslint": "^8.2.6",
+    "contains-path": "^1.0.0",
+    "eslint": "^5.2.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-module-utils": "^2.2.0",
+    "eslint-plugin-html": "^4.0.5",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "nodemon": "^1.8.1",
+    "read-pkg-up": "^4.0.0"
   }
 }

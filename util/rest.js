@@ -4,9 +4,9 @@ module.exports = {
         this.message = message || ''
     },
     restify: (pathPrefix) => {
-        pathPrefix = pathPrefix || '/api/'
+        pathPrefix = pathPrefix || '' ///api/
         return async(ctx, next) => {
-            if (ctx.request.path.startsWith(pathPrefix)) {
+            //if (ctx.request.path.startsWith(pathPrefix)) {
                 console.log(`Process API ${ctx.request.method} ${ctx.request.url}...`)
                 ctx.rest = (data) => {
                     ctx.response.body = {
@@ -24,9 +24,9 @@ module.exports = {
                         message: e.message || ''
                     }
                 }
-            } else {
+            /*} else {
                 await next()
-            }
+            }*/
         }
     }
 }

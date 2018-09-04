@@ -1,5 +1,5 @@
 const ArticleModel = require('../model/article')
-const statusCode = require('../util/status-code')
+const APIError = require('../util/rest').APIError
 let articleController = {
     /**
      * 创建文章
@@ -8,16 +8,18 @@ let articleController = {
      */
     'post /api/v1/article': async(ctx) => {
         let req = ctx.request.body
-
+        req.author = ctx.user.nickname
+        req.userId = ctx.user.id
         if (req.title && req.author && req.content && req.category) {
             let ret = await ArticleModel.createArticle(req)
-            let data = await ArticleModel.getArticleDetail(ret.id)
-
+            if (ret) {
+                ctx.rest()
+            } else {
+                throw new APIError('error', '创建文章失败，请重试')
+            }
             ctx.response.status = 200
-            ctx.body = statusCode.SUCCESS_200('创建文章成功', data)
         } else {
-            ctx.response.status = 412
-            ctx.body = statusCode.ERROR_412('创建文章失败，请求参数不能为空！')
+            throw new APIError('param_error', '创建文章失败，请求参数不能为空！')
         }
     },
     /**
@@ -79,19 +81,19 @@ let articleController = {
      * @param ctx
      * @returns {Promise.<void>}
      */
-    'put /article/:id': async(ctx) => {
+    'put /api/v1/updateArticle': async(ctx) => {
         let req = ctx.request.body
-        let id = ctx.params.id
-
-        if (req) {
-            await ArticleModel.updateArticle(id, req)
-            let data = await ArticleModel.getArticleDetail(id)
-
-            ctx.response.status = 200
-            ctx.body = statusCode.SUCCESS_200('更新文章成功！', data)
+        req.author = ctx.user.nickname
+        req.userId = ctx.user.id
+        if (req.title && req.author && req.content && req.category && req.id) {
+            let ret = await ArticleModel.updateArticle(req)
+            if (ret) {
+                ctx.rest(ret)
+            } else {
+                throw new APIError('error', '更新文章失败，请重试')
+            }
         } else {
-            ctx.response.status = 412
-            ctx.body = statusCode.ERROR_412('更新文章失败！')
+            throw new APIError('param_error', '更新文章失败，请求参数不能为空！')
         }
     }
 

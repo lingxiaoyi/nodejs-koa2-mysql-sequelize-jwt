@@ -7,11 +7,11 @@ module.exports = {
     parserOptions: {
         sourceType: 'module',
     },
-    globals: {
+    /*globals: {
         // Put things like jQuery, etc
         jQuery: true,
         $: true
-    },
+    },*/
     env: {
         browser: true,
         jquery: true,

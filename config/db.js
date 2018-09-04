@@ -5,7 +5,6 @@ const sequelize = new Sequelize('test', 'root', '', {
     operatorsAliases: false,
     dialectOptions: {
         charset: 'utf8mb4',
-        collate: 'utf8mb4_unicode_ci',
         supportBigNumbers: true,
         bigNumberStrings: true
     },

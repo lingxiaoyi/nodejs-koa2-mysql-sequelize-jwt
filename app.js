@@ -9,22 +9,23 @@ const logger = require('koa-logger')
 const cors = require('koa-cors')
 const router = require('./routes/index')()
 const secret = require('./config/secret')
-const err = require('./middlreware/error')
+const verify = require('./middlreware/verify')
 const rest = require('./util/rest')
 const path = require('path')
 // error handler
 onerror(app)
 
-app.use(err())
+app.use(verify())
 app.use(cors())
 
 // 过滤不用jwt验证
 app.use(jwt({secret: secret.sign}).unless({
     path: [
         /^\/stylesheets\/style\.css/,
-        /^\/api\/v1\/user\/list/,
-        /^\/api\/v1\/user/,
-        /^\/api\/v1\/user\/login/
+        ///^\/api\/v1\/user\/list/,
+        /^\/api\/v1\/user\/sign_[up|in]/,
+        /^\/api\/v1\/user\/login/,
+        /^((?!\/api).)*$/, //设置除了私有接口外的其它资源，可以不需要认证访问
     ]
 }))
 
@@ -60,5 +61,4 @@ app.use(router.routes(), router.allowedMethods())
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx)
 })
-
 module.exports = app

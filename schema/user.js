@@ -13,11 +13,57 @@ module.exports = function(sequelize, DataTypes) {
         password: {
             type: DataTypes.STRING(255),
             allowNull: false
-        }
+        },
+        nickname: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        headImg: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: ''
+        },
+        country: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        province: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        city: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        content: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: ''
+        },
+        plnum: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        userType: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        phone: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
     }, {
-        // 如果为 true 则表的名称和 model 相同，即 user
-        // 为 false MySQL创建的表名称会是复数 users
-        // 如果指定的表名称本就是复数形式则不变
-        freezeTableName: false
+        underscored: false,
+        timestamps: false,
+        paranoid: true,
+        freezeTableName: true, // 为 true 则表的名称和 model 相同
+        charset: 'utf8'
     })
 }

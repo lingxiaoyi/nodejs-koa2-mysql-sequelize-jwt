@@ -1,7 +1,8 @@
 const db = require('../config/db')
 const Sequelize = db.sequelize
 const Article = Sequelize.import('../schema/article')
-Article.sync({force: false})
+const User = Sequelize.import('../schema/user.js')
+//Article.sync({force: false})
 
 class ArticleModel {
     /**
@@ -10,11 +11,12 @@ class ArticleModel {
      * @returns {Promise<*>}
      */
     static async createArticle(data) {
-        return await Article.create({
+        return Article.create({
             title: data.title,
             author: data.author,
             content: data.content,
-            category: data.category
+            category: data.category,
+            userId: data.userId
         })
     }
 
@@ -24,8 +26,8 @@ class ArticleModel {
      * @param status  事项的状态
      * @returns {Promise.<boolean>}
      */
-    static async updateArticle(id, data) {
-        await Article.update({
+    static async updateArticle(req) {
+        /*await Article.update({
             title: data.title,
             author: data.author,
             content: data.content,
@@ -41,7 +43,10 @@ class ArticleModel {
                 'category'
             ]
         })
-        return true
+        return true*/
+        let user = await User.findAll({include: [{ model: Article, as: 'Article' }]})
+        //user.setArticle(Article.build(req))
+        return user
     }
 
     /**
@@ -49,7 +54,7 @@ class ArticleModel {
      * @returns {Promise<*>}
      */
     static async getArticleList() {
-        return await Article.findAndCountAll()
+        return Article.findAndCountAll()
     }
 
     /**
@@ -58,7 +63,7 @@ class ArticleModel {
      * @returns {Promise.<Model>}
      */
     static async getArticleDetail(id) {
-        return await Article.findOne({
+        return Article.findOne({
             where: {
                 id
             }

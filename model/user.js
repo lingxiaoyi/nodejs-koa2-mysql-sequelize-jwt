@@ -1,8 +1,23 @@
 const db = require('../config/db')
 const Sequelize = db.sequelize
 const User = Sequelize.import('../schema/user.js')
-User.sync({force: false});
-
+const Role = Sequelize.import('../schema/role.js')
+const Article = Sequelize.import('../schema/article.js')
+Sequelize.sync({force: false})
+//关联数据库关系
+User.belongsToMany(Role, {
+    through: 'userRoles',
+    as: 'UserRoles'
+})
+Role.belongsToMany(User, {
+    through: 'userRoles',
+    as: 'UserRoles'
+})
+User.hasMany(Article, {
+    foreignKey: 'userId',
+    targetKey: 'id',
+    as: 'Article'
+})
 class UserModel {
     /**
      * 创建用户
@@ -10,12 +25,8 @@ class UserModel {
      * @returns {Promise<boolean>}
      */
     static async create(user) {
-        let {username, password} = user;
-
-        await User.create({
-            username,
-            password
-        })
+        //let {username, password, nickname, headimgurl} = user
+        await User.create(user)
         return true
     }
 
@@ -27,7 +38,7 @@ class UserModel {
     static async delete(id) {
         await User.destroy({
             where: {
-                id,
+                id
             }
         })
         return true
@@ -38,8 +49,11 @@ class UserModel {
      * @returns {Promise<*>}
      */
     static async findAllUserList() {
-        return await User.findAll({
-            attributes: ['id', 'username']
+        return User.findAll({
+            attributes: [
+                'id',
+                'username'
+            ]
         })
     }
 
@@ -49,11 +63,16 @@ class UserModel {
      * @returns {Promise.<*>}
      */
     static async findUserByName(username) {
-        return await User.findOne({
+        return User.findOne({
             where: {
                 username
             }
         })
+    }
+    static async findUserArticleList() {
+        let data = await User.findOne()
+        data = data.getArticle()
+        return data
     }
 }
 

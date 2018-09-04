@@ -6,8 +6,13 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
-            autoIncrement: true
+            autoIncrement: true,
+            comment: 'id'
         }, // 文章标题
+        userId: {
+            type: DataTypes.BIGINT,
+            comment: '用户id'
+        },
         title: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -41,9 +46,9 @@ module.exports = function(sequelize, DataTypes) {
             }
         }
     }, {
-        // 如果为 true 则表的名称和 model 相同，即 user
-        // 为 false MySQL创建的表名称会是复数 users
-        // 如果指定的表名称本就是复数形式则不变
-        freezeTableName: false
+        underscored: false,
+        //timestamps: false,
+        freezeTableName: true, // 为 true 则表的名称和 model 相同
+        charset: 'utf8'
     })
 }

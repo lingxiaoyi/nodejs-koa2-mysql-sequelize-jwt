@@ -21,53 +21,47 @@ class ArticleModel {
     }
 
     /**
+     * 获取用户文章列表
+     * @param id 用户ID
+     * @returns {Promise.<*>}
+     */
+    static async getUserArticleList(id) {
+        let user = await User.findById(id,
+            {
+                include: [
+                    {
+                        model: Article,
+                        as: 'Article'
+                    },
+                ]
+            })
+        return user.Article
+    }
+    /**
      * 更新文章数据
      * @param id  用户ID
      * @param status  事项的状态
      * @returns {Promise.<boolean>}
      */
-    static async updateArticle(req) {
-        /*await Article.update({
-            title: data.title,
-            author: data.author,
-            content: data.content,
-            category: data.category
-        }, {
-            where: {
-                id
-            },
-            fields: [
-                'title',
-                'author',
-                'content',
-                'category'
-            ]
-        })
-        return true*/
-        let user = await User.findAll({include: [{ model: Article, as: 'Article' }]})
-        //user.setArticle(Article.build(req))
-        return user
-    }
-
-    /**
-     * 获取文章列表
-     * @returns {Promise<*>}
-     */
-    static async getArticleList() {
-        return Article.findAndCountAll()
-    }
-
-    /**
-     * 获取文章详情数据
-     * @param id  文章ID
-     * @returns {Promise.<Model>}
-     */
-    static async getArticleDetail(id) {
-        return Article.findOne({
-            where: {
-                id
-            }
-        })
+    static async updateArticle(data) {
+        let user = await User.findById(data.userId,
+            {
+                include: [
+                    {
+                        model: Article,
+                        as: 'Article',
+                        where: {
+                            id: data.id
+                        }
+                    },
+                ]
+            })
+        if (!user) {
+            return false //找不到文章
+        } else {
+            await user.Article[0].updateAttributes(data)
+            return true
+        }
     }
 
     /**
@@ -75,13 +69,25 @@ class ArticleModel {
      * @param id listID
      * @returns {Promise.<boolean>}
      */
-    static async deleteArticle(id) {
-        await Article.destroy({
-            where: {
-                id
-            }
-        })
-        return true
+    static async deleteArticle(userId, id) {
+        let user = await User.findById(userId,
+            {
+                include: [
+                    {
+                        model: Article,
+                        as: 'Article',
+                        where: {
+                            id: id
+                        }
+                    },
+                ]
+            })
+        if (!user) {
+            return false //找不到文章
+        } else {
+            await user.Article[0].destroy()
+            return true
+        }
     }
 }
 

@@ -14,6 +14,12 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(255),
             allowNull: false
         },
+        active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+            comment: '是否正常状态'
+        },
         nickname: {
             type: DataTypes.STRING(50),
             allowNull: false,

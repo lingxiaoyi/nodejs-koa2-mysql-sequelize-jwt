@@ -1,9 +1,12 @@
 const db = require('../config/db')
 const Sequelize = db.sequelize
 const User = Sequelize.import('../schema/user.js')
+const UserCheckin = Sequelize.import('../schema/userCheckin.js')
 const Role = Sequelize.import('../schema/role.js')
 const Article = Sequelize.import('../schema/article.js')
 Sequelize.sync({force: false})
+//UserCheckin.belongsTo(User)
+User.hasOne(UserCheckin)
 //关联数据库关系
 User.belongsToMany(Role, {
     through: 'userRoles',
@@ -25,11 +28,23 @@ class UserModel {
      * @returns {Promise<boolean>}
      */
     static async create(user) {
-        //let {username, password, nickname, headimgurl} = user
-        await User.create(user)
+        let userData = await User.create(user)
+        let role = await Role.create({roleName: '普通用户'})
+        let userCheckin = await UserCheckin.create({loginIp: '127.0.0.1'})
+        userData.setUserCheckin(userCheckin)
+        userData.setUserRoles(role)
         return true
     }
 
+    static async getPermissions(id) {
+        let user = await User.findById(id, {
+            include: [{
+                model: Role,
+                as: 'UserRoles'
+            }]
+        })
+        return user
+    }
     /**
      * 删除用户
      * @param id listID
@@ -68,11 +83,6 @@ class UserModel {
                 username
             }
         })
-    }
-    static async findUserArticleList() {
-        let data = await User.findOne()
-        data = data.getArticle()
-        return data
     }
 }
 

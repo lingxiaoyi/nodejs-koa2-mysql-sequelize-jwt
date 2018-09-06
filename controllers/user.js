@@ -739,7 +739,7 @@ let UserController = {
                 const userToken = {
                     nickname: newUser.nickname,
                     headImg: user.headImg,
-                    id: user.id,
+                    id: newUser.id,
                 }
                 // 储存token失效有效期1小时
                 const token = jwt.sign(userToken, secret.sign, {expiresIn: '24h'})
@@ -752,7 +752,10 @@ let UserController = {
                     overwrite: false // 是否允许重写
                 })
                 let data = {
-                    token
+                    nickname: newUser.nickname,
+                    headImg: user.headImg,
+                    id: newUser.id,
+                    token: token
                 }
                 ctx.rest(data)
             }
@@ -888,21 +891,11 @@ let UserController = {
      * @param ctx
      * @returns {Promise<void>}
      */
-    'get /api/v1/user/list': async(ctx) => {
-        let userList = ctx.request.body
-
-        if (userList) {
-            const data = await userModel.findAllUserList()
-            ctx.rest(data)
-        } else {
-            throw new APIError('username_exists', '用户已经存在')
-        }
-    },
-    'get /api/v1/user/get_article_list': async(ctx) => {
-        //let id = ctx.user.id
-        const data = await userModel.findUserArticleList()
+    'get /api/v1/user/get_permissions': async(ctx) => {
+        let id = ctx.user.id
+        const data = await userModel.getPermissions(id)
         ctx.rest(data)
-    },
+    }
     /*'get /public/bus/Getstop': async(ctx, next) => {
         try {
             await request.post('http://shanghaicity.openservice.kankanews.com/public/bus/Getstop')

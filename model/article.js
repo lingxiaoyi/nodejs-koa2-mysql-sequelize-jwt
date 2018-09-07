@@ -19,7 +19,6 @@ class ArticleModel {
             userId: data.userId
         })
     }
-
     /**
      * 获取用户文章列表
      * @param id 用户ID
@@ -59,11 +58,14 @@ class ArticleModel {
         if (!user) {
             return false //找不到文章
         } else {
-            await user.Article[0].updateAttributes(data)
+            try {
+                await user.Article[0].updateAttributes(data)
+            } catch (e) { //更新错误
+                return false
+            }
             return true
         }
     }
-
     /**
      * 删除文章
      * @param id listID

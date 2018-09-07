@@ -45,7 +45,7 @@ let articleController = {
             if (res) {
                 ctx.rest(res)
             } else {
-                throw new APIError('error', '更新文章失败，请重试')
+                throw new APIError('error', '更新失败，请重试')
             }
         } else {
             throw new APIError('param_error', '更新文章失败，请求参数不能为空！')

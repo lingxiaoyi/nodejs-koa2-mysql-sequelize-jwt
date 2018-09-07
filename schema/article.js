@@ -8,11 +8,12 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             autoIncrement: true,
             comment: 'id'
-        }, // 文章标题
+        },
         userId: {
             type: DataTypes.BIGINT,
             comment: '用户id'
         },
+        // 文章标题
         title: {
             type: DataTypes.TEXT,
             allowNull: false,

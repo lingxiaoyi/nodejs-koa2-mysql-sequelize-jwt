@@ -5,8 +5,8 @@ const UserCheckin = Sequelize.import('../schema/userCheckin.js')
 const Role = Sequelize.import('../schema/role.js')
 const Article = Sequelize.import('../schema/article.js')
 Sequelize.sync({force: false})
-//UserCheckin.belongsTo(User)
 User.hasOne(UserCheckin)
+UserCheckin.belongsTo(User)
 //关联数据库关系
 User.belongsToMany(Role, {
     through: 'userRoles',
@@ -28,12 +28,26 @@ class UserModel {
      * @returns {Promise<boolean>}
      */
     static async create(user) {
-        let userData = await User.create(user)
-        let role = await Role.create({roleName: '普通用户'})
-        let userCheckin = await UserCheckin.create({loginIp: '127.0.0.1'})
-        userData.setUserCheckin(userCheckin)
-        userData.setUserRoles(role)
-        return true
+        try {
+            /*let userData = await User.create(user)
+            let role = await Role.create({roleName: '普通用户'})
+            let userCheckin = await UserCheckin.create({loginIp: user.loginIp})*/
+            let [userData, role, userCheckin] = await Promise.all([
+                User.create(user),
+                Role.create({roleName: '普通用户'}),
+                UserCheckin.create({loginIp: user.loginIp})
+            ])
+            userData.setUserCheckin(userCheckin)
+            userData.setUserRoles(role)
+            return userData
+        } catch (e) {
+            await User.destroy({
+                where: {
+                    username: user.username
+                }
+            })
+            return false
+        }
     }
 
     static async getPermissions(id) {

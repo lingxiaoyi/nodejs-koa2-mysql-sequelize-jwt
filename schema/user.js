@@ -1,3 +1,4 @@
+const moment = require('moment')
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('user', {
         id: {
@@ -65,10 +66,22 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: ''
         },
+        createdAt: {
+            type: DataTypes.DATE,
+            get() {
+                return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss')
+            }
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            get() {
+                return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss')
+            }
+        }
     }, {
         underscored: false,
-        timestamps: false,
-        paranoid: true,
+        //timestamps: false,
+        //paranoid: true,
         freezeTableName: true, // 为 true 则表的名称和 model 相同
         charset: 'utf8'
     })

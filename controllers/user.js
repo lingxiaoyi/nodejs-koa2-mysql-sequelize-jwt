@@ -731,10 +731,11 @@ let UserController = {
                 user.password = hash
                 user.nickname = StringUtils.randName() //生成随机名字
                 user.headImg = 'http://msports.eastday.com/h5/img/portrait.png'
+                user.loginIp = ctx.ip || '::ffff:127.0.0.1'
                 // 创建用户
-                await userModel.create(user)
-                const newUser = await userModel.findUserByName(user.username)
-
+                let newUser = await userModel.create(user)
+                if (!newUser) throw new APIError('user_error', '创建用户失败,请重试')
+                //const newUser = await userModel.findUserByName(user.username)
                 // 签发token
                 const userToken = {
                     nickname: newUser.nickname,
@@ -753,7 +754,7 @@ let UserController = {
                 })
                 let data = {
                     nickname: newUser.nickname,
-                    headImg: user.headImg,
+                    headImg: newUser.headImg,
                     id: newUser.id,
                     token: token
                 }

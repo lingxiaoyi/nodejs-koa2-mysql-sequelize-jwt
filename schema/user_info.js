@@ -1,29 +1,44 @@
 const moment = require('moment')
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('user', {
+    return sequelize.define('user_info', {
         id: {
             type: DataTypes.INTEGER(11),
             allowNull: false,
             primaryKey: true,
             autoIncrement: true
         },
-        email: { //邮箱
-            type: DataTypes.STRING,
+        nickname: {
+            type: DataTypes.STRING(50),
             allowNull: false,
-            unique: true, //唯一
-            validate: {
-                isEmail: true, // 检测邮箱格式 (foo@bar.com)
-            },
+            defaultValue: ''
         },
-        password: {
+        headImg: {
             type: DataTypes.STRING(255),
-            allowNull: false
+            allowNull: false,
+            field: 'head_img',
+            defaultValue: ''
         },
-        state: { //状态 0未激活邮箱、1已激活邮箱
-            type: DataTypes.INTEGER(2),
-            defaultValue: 0 //默认值
+        city: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
         },
-        /*createdAt: {
+        content: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: ''
+        },
+        address: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        phone: {
+            type: DataTypes.STRING(50),
+            allowNull: false,
+            defaultValue: ''
+        },
+        createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
             get() {
@@ -36,7 +51,7 @@ module.exports = function(sequelize, DataTypes) {
             get() {
                 return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss')
             }
-        }*/
+        }
     }, {
         underscored: true,
         //timestamps: false,

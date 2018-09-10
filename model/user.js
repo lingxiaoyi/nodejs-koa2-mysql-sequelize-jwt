@@ -3,24 +3,6 @@ const Sequelize = db.sequelize
 const User = Sequelize.import('../schema/user.js')
 const UserCheckin = Sequelize.import('../schema/userCheckin.js')
 const Role = Sequelize.import('../schema/role.js')
-const Article = Sequelize.import('../schema/article.js')
-Sequelize.sync({force: false})
-User.hasOne(UserCheckin)
-UserCheckin.belongsTo(User)
-//关联数据库关系
-User.belongsToMany(Role, {
-    through: 'userRoles',
-    as: 'UserRoles'
-})
-Role.belongsToMany(User, {
-    through: 'userRoles',
-    as: 'UserRoles'
-})
-User.hasMany(Article, {
-    foreignKey: 'userId',
-    targetKey: 'id',
-    as: 'Article'
-})
 class UserModel {
     /**
      * 创建用户
@@ -29,16 +11,13 @@ class UserModel {
      */
     static async create(user) {
         try {
-            /*let userData = await User.create(user)
-            let role = await Role.create({roleName: '普通用户'})
-            let userCheckin = await UserCheckin.create({loginIp: user.loginIp})*/
-            let [userData, role, userCheckin] = await Promise.all([
+            let userData = await User.create(user)
+            let userCheckin = await UserCheckin.create({loginIp: user.loginIp})
+            let [userData, userCheckin] = await Promise.all([
                 User.create(user),
-                Role.create({roleName: '普通用户'}),
                 UserCheckin.create({loginIp: user.loginIp})
             ])
             userData.setUserCheckin(userCheckin)
-            userData.setUserRoles(role)
             return userData
         } catch (e) {
             await User.destroy({
@@ -48,6 +27,25 @@ class UserModel {
             })
             return false
         }
+    }
+    /**
+     * 创建用户角色
+     * @param role
+     * @returns role数据
+     */
+    static async createSubject(role) {
+        let arr = []
+        role.roleName.split(',').forEach(async function(item) {
+            let data = await User.findOne({
+                where: {
+                    roleName: item
+                }
+            })
+            if (!data) {
+                Role.create({roleName: item})
+            }
+        })
+        return Role.bulkCreate(arr)
     }
 
     static async getPermissions(id) {

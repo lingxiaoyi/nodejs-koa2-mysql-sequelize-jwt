@@ -2,7 +2,6 @@ const db = require('../config/db')
 const Sequelize = db.sequelize
 const Article = Sequelize.import('../schema/article')
 const User = Sequelize.import('../schema/user.js')
-//Article.sync({force: false})
 
 class ArticleModel {
     /**

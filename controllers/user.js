@@ -1,4 +1,4 @@
-const userModel = require('../model/user')
+const {UserModel} = require('../model/index')
 const jwt = require('jsonwebtoken')
 const secret = require('../config/secret')
 const bcrypt = require('bcryptjs')
@@ -11,11 +11,19 @@ class StringUtils {
      * @param username
      * @returns {boolean}
      */
+    static checkEmail(email) {
+        let reg = /^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,4})$/
+        return reg.test(email)
+    }
+    /**
+     * 验证用户名 用户名首个字符为字母,包含._数字 字母 至少五位
+     * @param username
+     * @returns {boolean}
+     */
     static checkUsername(username) {
         let reg = /^[a-zA-Z]{1}([a-zA-Z0-9]|[._]){4,19}$/
         return reg.test(username)
     }
-
     /**
      * 验证密码 密码同时包含数字和字母 字少六位
      * @param password
@@ -703,6 +711,7 @@ class StringUtils {
         return `${nicheng_tou[RandomNumBoth(0, 331)]}${nicheng_wei[RandomNumBoth(0, 325)]}`
     }
 }
+//url命名规则underline
 let UserController = {
     /**
      * 注册
@@ -711,15 +720,15 @@ let UserController = {
      */
     'post /api/v1/user/sign_up': async(ctx) => {
         const user = ctx.request.body
-        if (!StringUtils.checkUsername(user.username)) {
+        if (!StringUtils.checkEmail(user.email)) {
             throw new APIError('username_format_error', '用户名格式不对')
         }
         if (!StringUtils.checkPwd(user.password)) {
             throw new APIError('password_format_error', '密码格式不对')
         }
-        if (user.username && user.password) {
+        if (user.email && user.password) {
             // 查询用户名是否重复
-            const existUser = await userModel.findUserByName(user.username)
+            const existUser = await UserModel.findUserByName(user.email)
 
             if (existUser) {
                 // 反馈存在用户名
@@ -733,13 +742,13 @@ let UserController = {
                 user.headImg = 'http://msports.eastday.com/h5/img/portrait.png'
                 user.loginIp = ctx.ip || '::ffff:127.0.0.1'
                 // 创建用户
-                let newUser = await userModel.create(user)
+                let newUser = await UserModel.create(user)
                 if (!newUser) throw new APIError('user_error', '创建用户失败,请重试')
-                //const newUser = await userModel.findUserByName(user.username)
+                //const newUser = await UserModel.findUserByName(user.username)
                 // 签发token
                 const userToken = {
                     nickname: newUser.nickname,
-                    headImg: user.headImg,
+                    headImg: newUser.headImg,
                     id: newUser.id,
                 }
                 // 储存token失效有效期1小时
@@ -769,14 +778,14 @@ let UserController = {
      */
     'post /api/v1/user/sign_in': async(ctx) => {
         const data = ctx.request.body
-        if (!StringUtils.checkUsername(data.username)) {
+        if (!StringUtils.checkEmail(data.email)) {
             throw new APIError('username_format_error', '用户名格式不对')
         }
         if (!StringUtils.checkPwd(data.password)) {
             throw new APIError('password_format_error', '密码格式不对')
         }
         // 查询用户
-        const user = await userModel.findUserByName(data.username)
+        const user = await UserModel.findUserByName(data.email)
         // 判断用户是否存在
         if (user) {
             // 判断前端传递的用户密码是否与数据库密码一致
@@ -819,7 +828,7 @@ let UserController = {
             throw new APIError('password_format_error', '密码格式不对')
         }
         // 查询用户
-        const user = await userModel.findUserByName(data.username)
+        const user = await UserModel.findUserByName(data.username)
         // 判断用户是否存在
         if (user) {
             // 判断前端传递的用户密码是否与数据库密码一致
@@ -881,7 +890,7 @@ let UserController = {
         let id = ctx.params.id
 
         if (id && !isNaN(id)) {
-            await userModel.delete(id)
+            await UserModel.delete(id)
             ctx.rest('删除用户成功')
         } else {
             throw new APIError('ID_error', '无用户ID')
@@ -892,11 +901,11 @@ let UserController = {
      * @param ctx
      * @returns {Promise<void>}
      */
-    'get /api/v1/user/get_permissions': async(ctx) => {
+    'get /api/v1/user/get_user_role': async(ctx) => {
         let id = ctx.user.id
-        const data = await userModel.getPermissions(id)
+        const data = await UserModel.getUserRole(id)
         ctx.rest(data)
-    }
+    },
     /*'get /public/bus/Getstop': async(ctx, next) => {
         try {
             await request.post('http://shanghaicity.openservice.kankanews.com/public/bus/Getstop')
@@ -929,5 +938,11 @@ let UserController = {
             throw new APIError('error', e)
         }
     }*/
+    //role数据创建
+    'post /api/v1/set_user_role': async(ctx) => {
+        let body = ctx.request.body
+        const data = await UserModel.createUserRole(ctx.user.id, body.roleid)
+        ctx.rest(data)
+    }
 }
 module.exports = UserController

@@ -6,11 +6,7 @@ const bcrypt = require('bcryptjs')
 //const verify = util.promisify(jwt.verify)
 const APIError = require('../util/rest').APIError
 class StringUtils {
-    /**
-     * 验证用户名 用户名首个字符为字母,包含._数字 字母 至少五位
-     * @param username
-     * @returns {boolean}
-     */
+    //验证邮箱
     static checkEmail(email) {
         let reg = /^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,4})$/
         return reg.test(email)
@@ -713,11 +709,7 @@ class StringUtils {
 }
 //url命名规则underline
 let UserController = {
-    /**
-     * 注册
-     * @param ctx
-     * @returns {Promise.<void>}
-     */
+    //注册
     'post /api/v1/user/sign_up': async(ctx) => {
         const user = ctx.request.body
         if (!StringUtils.checkEmail(user.email)) {
@@ -726,56 +718,42 @@ let UserController = {
         if (!StringUtils.checkPwd(user.password)) {
             throw new APIError('password_format_error', '密码格式不对')
         }
-        if (user.email && user.password) {
-            // 查询用户名是否重复
-            const existUser = await UserModel.findUserByName(user.email)
-
-            if (existUser) {
-                // 反馈存在用户名
-                throw new APIError('username_exists', '此用户已经存在')
-            } else {
-                // 加密密码
-                const salt = bcrypt.genSaltSync()
-                const hash = bcrypt.hashSync(user.password, salt)
-                user.password = hash
-                user.nickname = StringUtils.randName() //生成随机名字
-                user.headImg = 'http://msports.eastday.com/h5/img/portrait.png'
-                user.loginIp = ctx.ip || '::ffff:127.0.0.1'
-                // 创建用户
-                let newUser = await UserModel.create(user)
-                if (!newUser) throw new APIError('user_error', '创建用户失败,请重试')
-                //const newUser = await UserModel.findUserByName(user.username)
-                // 签发token
-                const userToken = {
-                    nickname: newUser.nickname,
-                    headImg: newUser.headImg,
-                    id: newUser.id,
-                }
-                // 储存token失效有效期1小时
-                const token = jwt.sign(userToken, secret.sign, {expiresIn: '24h'})
-                ctx.cookies.set('token', token, {
-                    domain: '172.20.6.219', // 写cookie所在的域名
-                    path: '/', // 写cookie所在的路径
-                    maxAge: 10 * 60 * 1000, // cookie有效时长
-                    expires: new Date('2018-02-15'), // cookie失效时间
-                    httpOnly: false, // 是否只用于http请求中获取
-                    overwrite: false // 是否允许重写
-                })
-                let data = {
-                    nickname: newUser.nickname,
-                    headImg: newUser.headImg,
-                    id: newUser.id,
-                    token: token
-                }
-                ctx.rest(data)
+        // 查询用户名是否重复
+        const existUser = await UserModel.hasEmail(user.email)
+        if (existUser) {
+            // 反馈存在用户名
+            throw new APIError('email_exists', '此邮箱名已经存在')
+        } else {
+            // 加密密码
+            const salt = bcrypt.genSaltSync()
+            user.password = bcrypt.hashSync(user.password, salt)
+            user.nickname = StringUtils.randName() //生成随机名字
+            user.headImg = 'http://msports.eastday.com/h5/img/portrait.png'
+            user.loginIp = ctx.ip || '::ffff:127.0.0.1'
+            // 创建用户
+            let newUser = await UserModel.create(user)
+            if (!newUser) throw new APIError('user_error', '创建用户失败,请重试')
+            // 签发token
+            let userToken = {
+                nickname: user.nickname,
+                headImg: user.headImg,
+                id: newUser.id,
             }
+            // 储存token失效有效期1小时
+            const token = jwt.sign(userToken, secret.sign, {expiresIn: '24h'})
+            ctx.cookies.set('token', token, {
+                domain: '172.20.6.219', // 写cookie所在的域名
+                path: '/', // 写cookie所在的路径
+                maxAge: 10 * 60 * 1000, // cookie有效时长
+                expires: new Date('2018-02-15'), // cookie失效时间
+                httpOnly: false, // 是否只用于http请求中获取
+                overwrite: false // 是否允许重写
+            })
+            userToken.token = token
+            ctx.rest(userToken)
         }
     },
-    /**
-     * 登录
-     * @param ctx
-     * @returns {Promise<void>}
-     */
+    //登录
     'post /api/v1/user/sign_in': async(ctx) => {
         const data = ctx.request.body
         if (!StringUtils.checkEmail(data.email)) {
@@ -785,40 +763,34 @@ let UserController = {
             throw new APIError('password_format_error', '密码格式不对')
         }
         // 查询用户
-        const user = await UserModel.findUserByName(data.email)
+        const user = await UserModel.hasEmail(data.email)
         // 判断用户是否存在
         if (user) {
             // 判断前端传递的用户密码是否与数据库密码一致
-            if (bcrypt.compareSync(data.password, user.password)) {
+            const UserInfo = await UserModel.findUserInfo(data.email)
+            if (UserInfo.state === 3) throw new APIError('user_error', '此用户已拉黑')
+            if (bcrypt.compareSync(data.password, UserInfo.password)) {
+                let loginIp = ctx.ip || '::ffff:127.0.0.1'
+                await UserModel.updateLoginIp(UserInfo.id, loginIp)
                 // 用户token
-                const userToken = {
-                    nickname: user.nickname,
-                    headImg: user.headImg,
-                    id: user.id,
+                let userToken = {
+                    nickname: UserInfo.user_info.nickname,
+                    headImg: UserInfo.user_info.headImg,
+                    id: UserInfo.id,
                 }
                 // 签发token
-                const token = jwt.sign(userToken, secret.sign, {expiresIn: '24h'})
-                let data = {
-                    nickname: user.nickname,
-                    headImg: user.headImg,
-                    id: user.id,
-                    token: token
-                }
-                ctx.rest(data)
+                userToken.token = jwt.sign(userToken, secret.sign, {expiresIn: '24h'})
+                ctx.rest(userToken)
             } else {
                 //密码错误
-                throw new APIError('pwd_error', '用户名或密码错误')
+                throw new APIError('pwd_error', '密码错误')
             }
         } else {
             //此用户不存在 为了防止用户名撞库,提示此信息
-            throw new APIError('user_error', '用户名或密码错误')
+            throw new APIError('user_error', '没有此用户名')
         }
     },
-    /**
-     * 退出
-     * @param ctx
-     * @returns {Promise.<void>}
-     */
+    //退出
     'post /api/v1/user/sign_out': async(ctx) => {
         const data = ctx.request.body
         if (!StringUtils.checkUsername(data.username)) {
@@ -855,91 +827,36 @@ let UserController = {
             throw new APIError('user_error', '用户名或密码错误')
         }
     },
-    /**
-     * 查询用户信息
-     * @param ctx
-     * @returns {Promise<void>}
-     */
+    //查询用户信息
     'get /api/v1/get_user_info': async(ctx) => {
         ctx.rest(ctx.user)
-        // 获取jwt
-        /*const token = ctx.header.authorization
-        if (token) {
-            let payload
-            try {
-                // 解密payload，获取用户名和ID1
-                payload = await verify(token.split(' ')[1], secret.sign)
-                const user = {
-                    id: payload.id,
-                    username: payload.username
-                }
-                ctx.rest(user)
-            } catch (err) {
-                throw new APIError('token verify fail', '查询失败!')
-            }
-        } else {
-            throw new APIError('authorization not find', 'token值为空')
-        }*/
     },
-    /**
-     * 删除用户
-     * @param ctx
-     * @returns {Promise<void>}
-     */
+    //拉黑用户
     'delete /api/v1/user/:id': async(ctx) => {
         let id = ctx.params.id
 
         if (id && !isNaN(id)) {
-            await UserModel.delete(id)
-            ctx.rest('删除用户成功')
+            await UserModel.blackUser(id)
+            ctx.rest('拉黑用户成功')
         } else {
             throw new APIError('ID_error', '无用户ID')
         }
     },
-    /**
-     * 获取用户列表
-     * @param ctx
-     * @returns {Promise<void>}
-     */
-    'get /api/v1/user/get_user_role': async(ctx) => {
+
+    //创建角色
+    'post /api/v1/role': async(ctx) => {
+        let body = ctx.request.body
+        const data = await UserModel.createRole(body.roles)
+        ctx.rest(data)
+    },
+    //获取用户角色
+    'get /api/v1/get_user_role': async(ctx) => {
         let id = ctx.user.id
         const data = await UserModel.getUserRole(id)
         ctx.rest(data)
     },
-    /*'get /public/bus/Getstop': async(ctx, next) => {
-        try {
-            await request.post('http://shanghaicity.openservice.kankanews.com/public/bus/Getstop')
-            .send('stoptype=1')
-            .send('stopid=7.')
-            .send('sid=6a005acd04da149bfaf0e2ba52f16077')
-            .set({ Accept: '*!/!*',
-                'Accept-Encoding': 'gzip, deflate',
-                'Accept-Language': 'zh-CN,zh;q=0.9',
-                'Cache-Control': 'no-cache',
-                Connection: 'keep-alive',
-                'Content-Length': '57',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                Cookie: '_ga=GA1.2.1373205916.1533562785; HA=e7436beb7035e5dc36dfd05d044aa262c2d655d6; HB=ZTc0MzZiZWI3MDM1ZTVkYzM2ZGZkMDVkMDQ0YWEyNjJjMmQ2NTVkNg==; HC=1f003f1eb1d2071f5bef8995b16a333c1fa27cd1; HD=MjAxODA4MDY=; HG=23ee3aba1f7b177f38e9128d8244255d162c5ff9; HH=dc6335c75dc45f30c611d47e14bb86aad8c6a5e6; HK=940feaf29d29419ef2aba948ba67989cea5d6f41; HO=TWpBeE9EQTRNRFk9MjFNVFF3TWpBMzM5VFc5NmFXeHNZUzgxTGpBZ0tHbFFhRzl1WlRzZ1ExQlZJR2xRYUc5dVpTQlBVeUF4TVY4MFh6RWdiR2xyWlNCTllXTWdUMU1nV0NrZ1FYQndiR1ZYWldKTGFYUXZOakExTGpFdU1UVWdLRXRJVkUxTUxDQnNhV3RsSUVkbFkydHZLU0JOYjJKcGJHVXZNVFZITnpjZ1RXbGpjbTlOWlhOelpXNW5aWEl2Tmk0M0xqRWdUbVYwVkhsd1pTOVhTVVpKSUV4aGJtZDFZV2RsTDNwb1gwTk8xZjJlNTFjMWE3MzBkMmQ0MzE0Yzc5NDY5NmI4ZWEwZmEzMjdiMmE0; HY=MjAxODA4MDY=940feaf29d29419ef2aba948ba67989cea5d6f4123ee3aba1f7b177f38e9128d8244255d162c5ff91f2e51c1a730d2d4314c794696b8ea0fa327b2a4; Hm_p1vt_6f69830ae7173059e935b61372431b35=eSgsNFtoT6NrJQcTDgsfAg==; _gat=1; Hm_1vt_6f69830ae7173059e935b61372431b35=eSgsNFtoT6BrJQcTDgsYAg==',
-                Host: 'shanghaicity.openservice.kankanews.com',
-                Origin: 'http://shanghaicity.openservice.kankanews.com',
-                Pragma: 'no-cache',
-                Referer: 'http://shanghaicity.openservice.kankanews.com/public/bus/mes/sid/6a005acd04da149bfaf0e2ba52f16077/stoptype/1',
-                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
-                'X-Requested-With': 'XMLHttpRequest'})
-            .then(function(res) {
-                //ctx.rest(res.text)
-                ctx.response.body = {
-                    code: '200',
-                    message: 'success',
-                    data: JSON.parse(res.text)
-                }
-            })
-        } catch (e) {
-            throw new APIError('error', e)
-        }
-    }*/
-    //role数据创建
-    'post /api/v1/set_user_role': async(ctx) => {
+    //用户创建role
+    'post /api/v1/user_role': async(ctx) => {
         let body = ctx.request.body
         const data = await UserModel.createUserRole(ctx.user.id, body.roleid)
         ctx.rest(data)

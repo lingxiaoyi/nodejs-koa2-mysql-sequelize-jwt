@@ -2,9 +2,8 @@ const jwt = require('jsonwebtoken')
 const secret = require('../config/secret')
 const util = require('util')
 const verify = util.promisify(jwt.verify)
-//const statusCode = require('../util/status-code')
 const APIError = require('../util/rest').APIError
-
+const {UserModel} = require('../model/index')
 /**
  * 判断token是否可用
  */
@@ -18,16 +17,17 @@ module.exports = function() {
                     // 解密payload，获取用户名和ID
                     payload = await verify(token.split(' ')[1], secret.sign)
                     //将用户信息放到ctx.user
+                    let data = await UserModel.findUser(payload.id)
+                    if (data.state === 3) {
+                        ctx.body = new APIError('user_error', '用户被拉黑')
+                        return
+                    }
                     ctx.user = {
                         nickname: payload.nickname,
                         headImg: payload.headImg,
                         id: payload.id,
                     }
-                    /*ctx.response.body = {
-                        code: '200',
-                        message: 'success',
-                        data: ctx.user
-                    }*/
+                    console.log(2222222222)
                     await next()
                 } catch (err) {
                     //token过期,解析不了报错

@@ -1,6 +1,5 @@
-const moment = require('moment')
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('userCheckin', {
+    return sequelize.define('user_checkin', {
         id: {
             type: DataTypes.INTEGER(11),
             allowNull: false,
@@ -11,23 +10,17 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: '',
+            field: 'login_ip',
             validate: {isIP: true},
             comment: '登录IP'
         },
-        createdAt: {
-            type: DataTypes.DATE,
-            get() {
-                return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss')
-            }
+        userId: {
+            type: DataTypes.BIGINT,
+            field: 'user_id',
+            comment: '用户id'
         },
-        updatedAt: {
-            type: DataTypes.DATE,
-            get() {
-                return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss')
-            }
-        }
     }, {
-        underscored: false,
+        underscored: true,
         //timestamps: false,
         paranoid: true,
         freezeTableName: true, // 为 true 则表的名称和 model 相同

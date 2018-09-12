@@ -1,4 +1,3 @@
-const moment = require('moment')
 module.exports = function(sequelize, DataTypes) {
     return sequelize.define('role', {
         id: {
@@ -10,23 +9,13 @@ module.exports = function(sequelize, DataTypes) {
         },
         roleName: {
             type: DataTypes.STRING,
-            comment: '角色名'
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            get() {
-                return moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss')
-            }
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            get() {
-                return moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss')
-            }
+            comment: '角色名',
+            field: 'role_name',
         }
     }, {
-        underscored: false,
+        underscored: true,
         //timestamps: false,
+        paranoid: true,
         freezeTableName: true,
         charset: 'utf8'
     })

@@ -18,8 +18,11 @@ module.exports = function() {
                     payload = await verify(token.split(' ')[1], secret.sign)
                     //将用户信息放到ctx.user
                     let data = await UserModel.findUser(payload.id)
-                    if (data.state === 3) {
+                    if (data.state === 2) {
                         ctx.body = new APIError('user_error', '用户被拉黑')
+                        return
+                    } else if (data.state === 0) {
+                        ctx.body = new APIError('user_error', '用户未激活,请去激活')
                         return
                     }
                     ctx.user = {
@@ -27,7 +30,6 @@ module.exports = function() {
                         headImg: payload.headImg,
                         id: payload.id,
                     }
-                    console.log(2222222222)
                     await next()
                 } catch (err) {
                     //token过期,解析不了报错
@@ -43,7 +45,7 @@ module.exports = function() {
                 ctx.body = new APIError('Error', '请求需要用户的身份认证！')
             } else {
                 err.status = 200
-                ctx.body = new APIError('exit，不存在的用户')
+                ctx.body = new APIError(err.message)
             }
         }
     }

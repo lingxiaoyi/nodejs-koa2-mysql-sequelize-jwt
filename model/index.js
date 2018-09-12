@@ -74,7 +74,7 @@ class UserModel {
                 id
             }
         })
-        return data.update({state: 3})
+        return data.update({state: 2})
     }
     //查询email是否注册
     static async hasEmail(email) {

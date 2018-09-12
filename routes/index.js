@@ -23,11 +23,9 @@ function addMapping(router, mapping) {
 }
 
 function addControllers(router, dir) {
-    let arr = []
-    arr = fs.readdirSync(path.resolve(__dirname, dir)).filter((f) => {
+    fs.readdirSync(path.resolve(__dirname, dir)).filter((f) => {
         return f.endsWith('.js')
-    })
-    arr.reverse().forEach((f) => {
+    }).forEach((f) => {
         let mapping = require(path.resolve(__dirname, `${dir}/${f}`))
         addMapping(router, mapping)
     })

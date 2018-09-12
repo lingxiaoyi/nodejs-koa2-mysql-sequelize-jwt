@@ -768,7 +768,7 @@ let UserController = {
         if (user) {
             // 判断前端传递的用户密码是否与数据库密码一致
             const UserInfo = await UserModel.findUserInfo(data.email)
-            if (UserInfo.state === 3) throw new APIError('user_error', '此用户已拉黑')
+            if (UserInfo.state === 2) throw new APIError('user_error', '此用户已拉黑')
             if (bcrypt.compareSync(data.password, UserInfo.password)) {
                 let loginIp = ctx.ip || '::ffff:127.0.0.1'
                 await UserModel.updateLoginIp(UserInfo.id, loginIp)

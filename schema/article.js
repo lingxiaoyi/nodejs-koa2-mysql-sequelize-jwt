@@ -34,7 +34,11 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'category'
-        }
+        },
+        state: { //状态 1.草稿 2.发布
+            type: DataTypes.INTEGER(2),
+            defaultValue: 1 //默认值
+        },
     }, {
         underscored: true,
         //timestamps: false,

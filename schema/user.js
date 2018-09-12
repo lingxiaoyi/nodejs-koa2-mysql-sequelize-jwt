@@ -19,7 +19,7 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(255),
             allowNull: false
         },
-        state: { //状态 0未激活邮箱.1已激活邮箱.3拉黑用户
+        state: { //状态 0未激活邮箱.1已激活邮箱.2拉黑用户
             type: DataTypes.INTEGER(2),
             defaultValue: 0 //默认值
         },
